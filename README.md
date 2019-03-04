@@ -277,31 +277,29 @@
 
 # Python基础
 ## 1.1 有一个jsonline格式的文件爱file.txt 大小约为10K
-```
-    def get_lines():
-        l = []
-        with open('file.txt','rb) as f:
-            for eachline in f:
-                l.append(eachline)
-            return l
+```python
+def get_lines():
+    with open('file.txt', 'rb') as f:
+        return list(l)
 
-    if __name__ == '__main__':
-        for e in get_lines():
-            process(e) #处理每一行数据
+if __name__ == '__main__':
+    for e in get_lines():
+        process(e)          # 处理每一行数据
 ```
 现在要处理一个大小为10G的文件，但是内存只有4G，如果在只修改get_lines 函数而其他代码保持不变的情况下，应该如何实现？需要考虑的问题都有那些？
-```
-    def get_lines():
-        l = []
-        with open('file.txt','rb') as f:
-            data = f.readlines(60000)
-        l.append(data)
-        yield l
+```python
+def get_lines(line_number=10000):
+    f = open('file.txt','rb')
+    while True:
+        lines = f.readlines(line_number)
+        if not lines:
+            return
+        yield lines
 ```
 要考虑的问题有：内存只有4G无法一次性读入10G文件，需要分批读入分批读入数据要记录每次读入数据的位置。分批每次读取数据的大小，太小会在读取操作花费过多时间。
 ## 1.2 补充缺失的代码
-```
-    def print_directory_contents(sPath):
+```python
+def print_directory_contents(sPath):
     """
     这个函数接收文件夹的名称作为输入参数
     返回该文件夹中文件的路径
@@ -315,252 +313,352 @@
         else:
             print(sChildPath)
 ```
-# 模块与包
-## 2.1 输入日期， 判断这一天是这一年的第几天？
+更简单的做法：`os.walk`.
+```python
+def print_directory_contents(sPath):
+    """
+    这个函数接收文件夹的名称作为输入参数
+    返回该文件夹中文件的路径
+    以及其包含文件夹中文件的路径
+    """
+    import os
+    for root, dirs, files in os.walk(sPath):
+        for dir_name in dirs:
+            print(os.path.join(root, dir_name))
+        for fname in files:
+            print(os.path.join(root, fname))
 ```
+
+# 模块与包
+## 2.1 输入日期，判断这一天是这一年的第几天？
+```python
     import datetime
     def dayofyear():
         year = input("请输入年份: ")
         month = input("请输入月份: ")
         day = input("请输入天: ")
-        date1 = datetime.data(year=int(year),month=int(month),day=int(day))
-        date2 = datatime.date(year=int(year),month=1,day=1)
-        return (date2-date1 +1).days
+        date1 = datetime.data(year=int(year), month=int(month), ay=int(day))
+        date2 = datatime.date(year=int(year), month=1, day=1)
+        return (date2 - date1 +1).days
 ```
 ## 2.2 打乱一个排好序的list对象alist？
-```
-    import random
-    alist = [1,2,3,4,5]
-    random.shuffle(alist)
-    print(alist)
+```python
+import random
+alist = [1, 2, 3, 4, 5]
+random.shuffle(alist)
+print(alist)
 ```
 # 数据类型
-## 3.1 现有字典 d= {'a':24,'g':52,'i':12,'k':33}请按value值进行排序?
-```
-    sorted(d.items(),key=lambda x:x[1])
+## 3.1 现有字典 d = {'a': 24, 'g': 52, 'i': 12, 'k': 33}，请按value值进行排序?
+```python
+from operator import itemgetter
+
+sorted(d.items(),key=itemgetter(1))
 ```
 ## 3.2 字典推导式
-```
- d = {key:value for (key,value) in iterable}
+```python
+d = {key:value for (key, value) in iterable}
 ```
 ## 3.3 请反转字符串 "aStr"?
+```python
+print("aStr"[::-1])
 ```
-    print("aStr"[::-1])
-```
-## 3.4 将字符串 "k:1 |k1:2|k2:3|k3:4"，处理成字典 {k:1,k1:2,...}
-```
-    str1 = "k:1|k1:2|k2:3|k3:4"
-    def str2dict(str1):
-        dict1 = {}
-        for iterms in str1.split('|'):
-            key,value = iterms.split(':'):
-                dict1[key] = value
-        return dict1
+## 3.4 将字符串 "k:1|k1:2|k2:3|k3:4"，处理成字典 {k:1,k1:2,...}
+```python
+str1 = "k:1|k1:2|k2:3|k3:4"
+def str2dict(str1):
+    dict1 = {}
+    for iterms in str1.split('|'):
+        key,value = iterms.split(':'):
+        dict1[key] = value
+    return dict1
 ```
 ## 3.5 请按alist中元素的age由小到大排序
-```
-    alist = [{'name':'a','age':20},{'name':'b','age':30},{'name':'c','age':25}]
-    def sort_by_age(list1):
-        return sorted(alist,key=lambda x:x['age'],reverse=True)
+```python
+alist = [{'name':'a','age':20},{'name':'b','age':30},{'name':'c','age':25}]
+
+def sort_by_age(list1):
+    from operator import itemgetter
+    return sorted(alist, key=itemgetter('age'), reverse=True)
 ```
 ## 3.6 下面代码的输出结果将是什么？
+```python
+list = ['a','b','c','d','e']
+print(list[10:])
 ```
-    list = ['a','b','c','d','e']
-    print(list[10:])
-```
-代码将输出[],不会产生IndexError错误，就像所期望的那样，尝试用超出成员的个数的index来获取某个列表的成员。例如，尝试获取list[10]和之后的成员，会导致IndexError。然而，尝试获取列表的切片，开始的index超过了成员个数不会产生IndexError，而是仅仅返回一个空列表。这成为特别让人恶心的疑难杂症，因为运行的时候没有错误产生，导致Bug很难被追踪到。
+代码将输出`[]`,不会产生IndexError错误，就像所期望的那样，尝试用超出成员的个数的index来获取某个列表的成员。例如，尝试获取list[10]和之后的成员，会导致IndexError。然而，尝试获取列表的切片，开始的index超过了成员个数不会产生IndexError，而是仅仅返回一个空列表。这成为特别让人恶心的疑难杂症，因为运行的时候没有错误产生，导致Bug很难被追踪到。
 ## 3.7 写一个列表生成式，产生一个公差为11的等差数列
-```
-    print([x*11 for x in range(10)])
+```python
+print([x * 11 for x in range(10)])
 ```
 ## 3.8 给定两个列表，怎么找出他们相同的元素和不同的元素？
-```
-    list1 = [1,2,3]
-    list2 = [3,4,5]
-    set1 = set(list1)
-    set2 = set(list2)
-    print(set1 & set2)
-    print(set1 ^ set2)
+```python
+list1 = [1,2,3]
+list2 = [3,4,5]
+set1 = set(list1)
+set2 = set(list2)
+print(set1 & set2)
+print(set1 ^ set2)
 ```
 ## 3.9 请写出一段python代码实现删除list里面的重复元素？
-```
-    l1 = ['b','c','d','c','a','a']
-    l2 = list(set(l1))
-    print(l2)
+```python
+l1 = ['b','c','d','c','a','a']
+l2 = list(set(l1))
+print(l2)
 ```
 用list类的sort方法:
-```
-    l1 = ['b','c','d','c','a','a']
-    l2 = list(set(l1))
-    l2.sort(key=l1.index)
-    print(l2)
-```
-也可以这样写:
-```
-    l1 = ['b','c','d','c','a','a']
-    l2 = sorted(set(l1),key=l1.index)
-    print(l2)
+```python
+l1 = ['b','c','d','c','a','a']
+l2 = list(set(l1))
+l2.sort(key=l1.index)
+print(l2)
 ```
 也可以用遍历：
-```
-    l1 = ['b','c','d','c','a','a']
-    l2 = []
-    for i in l1:
-        if not i in l2:
-            l2.append(i)
-    print(l2)
+```python
+l1 = ['b','c','d','c','a','a']
+l2 = []
+for i in l1:
+    if not i in l2:
+        l2.append(i)
+print(l2)
 ```
 ## 3.10 给定两个list A，B ,请用找出A，B中相同与不同的元素
-```
-    A,B 中相同元素： print(set(A)&set(B))
-    A,B 中不同元素:  print(set(A)^set(B))
+```python
+A,B 中相同元素： print(set(A)&set(B))
+A,B 中不同元素:  print(set(A)^set(B))
 ```
 # 企业面试题
 ## 4.1 python新式类和经典类的区别？
-a. 在python里凡是继承了object的类，都是新式类
-b. Python3里只有新式类
-c. Python2里面继承object的是新式类，没有写父类的是经典类
-d. 经典类目前在Python里基本没有应用
+根本区别：MRO 不同。
+a. 在 Python 里凡是继承了 `object` 的类，都是新式类
+b. Python 3 里只有新式类
+c. Python 2 里面继承 `object` 的是新式类，没有写父类的是经典类
+d. 经典类目前在 Python 里基本没有应用
 
 ## 4.2 python中内置的数据结构有几种？
-a. 整型 int、 长整型 long、浮点型 float、 复数 complex
-b. 字符串 str、 列表list、 元祖tuple
-c. 字典 dict 、 集合 set
+a. 整型 int、长整型 long、浮点型 float、复数 complex
+b. 字符串 str、列表list、元组tuple
+c. 字典 dict、集合 set
+d. None
 
 ## 4.3 python如何实现单例模式?请写出两种实现方式?
 第一种方法:使用装饰器
-```
-    def singleton(cls):
-        instances = {}
-        def wrapper(*args, **kwargs):
-            if cls not in instances:
-                instances[cls] = cls(*args, **kwargs)
-            return instances[cls]
-        return wrapper
-    @singleton
-    class Foo(object):
-        pass
-    foo1 = Foo()
-    foo2 = Foo()
-    print foo1 is foo2 #True
+```python
+def singleton(cls):
+    instances = {}
+    def wrapper(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return wrapper
+
+@singleton
+class Foo(object):
+    pass
+
+foo1 = Foo()
+foo2 = Foo()
+assert foo1 is foo2
 ```
 第二种方法：使用基类
-New 是真正创建实例对象的方法，所以重写基类的new 方法，以此保证创建对象的时候只生成一个实例
-```
-    class Singleton(object):
-        def __new__(cls,*args,**kwargs):
-            if not hasattr(cls,'_instance'):
-                cls._instance = super(Singleton,cls).__new__(cls,*args,**kwargs)
-            return cls._instance
-        
-    class Foo(Singleton):
-        pass
+`__new__` 是真正创建实例对象的方法，所以重写基类的 `__new__` 魔术方法，以此保证创建对象的时候只生成一个实例
+```python
+class Singleton(object):
+    def __new__(cls,*args,**kwargs):
+        if not hasattr(cls,'_instance'):
+            cls._instance = super(Singleton,cls).__new__(cls,*args,**kwargs)
+        return cls._instance
     
-    foo1 = Foo()
-    foo2 = Foo()
+class Foo(Singleton):
+    pass
 
-    print foo1 is foo2 #True
+foo1 = Foo()
+foo2 = Foo()
+
+assert foo1 is foo2
 ```
-第三种方法：元类，元类是用于创建类对象的类，类对象创建实例对象时一定要调用call方法，因此在调用call时候保证始终只创建一个实例即可，type是python的元类
-```
-    class Singleton(type):
-        def __call__(cls,*args,**kwargs):
-            if not hasattr(cls,'_instance'):
-                cls._instance = super(Singleton,cls).__call__(*args,**kwargs)
-            return cls._instance
-```
-```
-    class Foo(object):
-        __metaclass__ = Singleton
-    
-    foo1 = Foo()
-    foo2 = Foo()
-    print foo1 is foo2 #True
+第三种方法：元类，元类是用于创建类对象的类，类对象创建实例对象时一定要调用 `__call__` 魔术方法，因此在调用 `__call__` 的时候保证始终只创建一个实例即可，`type` 是 Python 类的类型（type)
+```python
+class Singleton(type):
+    def __call__(cls,*args,**kwargs):
+        if not hasattr(cls,'_instance'):
+            cls._instance = super(Singleton,cls).__call__(*args,**kwargs)
+        return cls._instance
+
+class Foo(object, metaclass=Singleton):
+    pass
+
+foo1 = Foo()
+foo2 = Foo()
+assert foo1 is foo2
 
 ```
 ## 4.4 反转一个整数，例如-123 --> -321 
-```
-    class Solution(object):
-        def reverse(self,x):
-            if -10<x<10:
-                return x
-            str_x = str(x)
-            if str_x[0] !="-":
-                str_x = str_x[::-1]
-                x = int(str_x)
-            else:
-                str_x = str_x[1:][::-1]
-                x = int(str_x)
-                x = -x
-            return x if -2147483648<x<2147483647 else 0
-    if __name__ == '__main__':
-        s = Solution()
-        reverse_int = s.reverse(-120)
-        print(reverse_int)
+```python
+class Solution(object):
+    def reverse(self,x):
+        if -10 < x < 10:
+            return x
+        str_x = str(x)
+        if str_x[0] != "-":
+            str_x = str_x[::-1]
+            x = int(str_x)
+        else:
+            str_x = str_x[1:][::-1]
+            x = int(str_x)
+            x = -x
+        return x if -2147483648< x <2147483647 else 0
+
+if __name__ == '__main__':
+    s = Solution()
+    reverse_int = s.reverse(-120)
+    print(reverse_int)
 ```
 ## 4.5 设计实现遍历目录与子目录，抓取.pyc文件
 第一种方法：
-```
-    import os
+```python
+import os
 
-    def getFiles(dir,suffix):
-        res = []
-        for root,dirs,files in os.walk(dir):
-            for filename in files:
-                name,suf = os.path.splitext(filename)
-                if suf == suffix:
-                    res.append(os.path.join(root,filename))
+def getFiles(dir, suffix):
+    res = []
+    for root, dirs, files in os.walk(dir):
+        for filename in files:
+            name,suf = os.path.splitext(filename)
+            if suf == suffix:
+                res.append(os.path.join(root,filename))
 
-        print(res)
-    
-    getFiles("./",'.pyc')
+    return res
+
+getFiles("./",'.pyc')
 ```
 第二种方法：
-```
+```python
     import os
+
+def pick(obj):
+    try:
+        if obj[-4:] == ".pyc":
+            print(obj)
+        except:
+            return None
     
-    def pick(obj):
-        try:
-            if obj.[-4:] == ".pyc":
-                print(obj)
-            except:
-                return None
-        
-    def scan_path(ph):
-        file_list = os.listdir(ph)
-        for obj in file_list:
-            if os.path.isfile(obj):
-        pick(obj)
-            elif os.path.isdir(obj):
-                scan_path(obj)
-        
-    if __name__=='__main__':
-        path = input('输入目录')
-        scan_path(path)
+def scan_path(ph):
+    file_list = os.listdir(ph)
+    for obj in file_list:
+        if os.path.isfile(obj):
+            pick(obj)
+        elif os.path.isdir(obj):
+            scan_path(obj)
+    
+if __name__=='__main__':
+    path = input('输入目录')
+    scan_path(path)
 ```
 ## 4.6 一行代码实现1-100之和
+```python
+sum(range(101))
 ```
-    count = sum(range(0,101))
-    print(count)
+
+## 4.7 Python 遍历列表时删除元素的正确做法
+**不要删**。
+
+Python 在遍历列表时，会根据 `index` 来遍历。如果在迭代过程中删除了某些元素，可能会跳过下一个迭代的元素。  
+更好的做法是在遍历过程中记下所有需要删除的下标，迭代结束后一并删除。
+
+## 4.9 可变类型和不可变类型
+`list` 是可变类型，在构建后可以对它进行原地修改；而 `tuple` 是不可变类型，对它进行操作（如 `+=`）将会产生一个新的 `tuple` 对象。
+
+## 4.10 `is` 和 `==` 有什么区别？
+`is` 是比较两个对象的 ID；`==` 会查看两边的对象是否实现了 `__eq__` 函数，
+若实现则调用，若都未实现，`==` 才会比较两个对象的 ID.
+
+## 4.11 求出列表所有奇数并构造新列表
+```python
+[
+    a for a in a_list
+    if a % 2
+]
 ```
+
+## 4.12 用一行 Python 代码写出 1+2+3+10248
+```python
+sum(range(1, 10249))
+```
+
+## 4.13 Python 中变量的作用域？（变量查找顺序）
+locals → nonlocals → globals
+
+## 4.14 字符串 `"123"` 转换成 123，不使用内置 api，例如 int
+```python
+def atoi(s):
+    n = 0
+    for c in s:
+        n = n * 10 + ord(c) - ord('0')
+    return n
+
+atoi("123")
+```
+
+## 4.15 Given an array of integers
+* `range(start, stop[, step])`
+* `itertools.count(start=0, step=1)`
+
+## 4.17 统计一个文本中单词频次最高的10个单词？
+```python
+def most_common(text):
+    from collections import Counter
+    c = Counter(text.split())
+    return [x[0] for x in c.most_common(10)]
+```
+
+## 4.20 用一行代码生成[1,4,9,16,25,36,49,64,81,100]
+```python
+[x ** 2 for x in range(1, 11)]
+```
+
+## 4.22 两个有序列表，l1，l2，对这两个列表进行合并不可使用 extend
+耍赖的做法：
+```python
+def merge(l1, l2):
+    return list(sorted(l1 + l2))
+```
+考官可能想考的归并排序：
+```python
+def merge(l1, l2):
+    length1, length2 = len(l1), len(l2)
+    i1 = i2 = 0
+    result = []
+    while (i1 < length1 and i2 < length1):
+        if l1[i1] < l2[i2]:
+            result.append(l1[i1])
+            i1 += 1
+        else:
+            result.append(l2[i2])
+            i2 += 1
+    if i1 < length1:
+        result += l1[i1:]
+    elif i2 < length1:
+        result += l2[i2:]
+    return result
+```
+
 
 # Python高级
-## 4设计模式
+## 4 设计模式
 ## 4.1 对设计模式的理解，简述你了解的设计模式？
 设计模式是经过总结，优化的，对我们经常会碰到的一些编程问题的可重用解决方案。一个设计模式并不像一个类或一个库那样能够直接作用于我们的代码，反之，设计模式更为高级，它是一种必须在特定情形下实现的一种方法模板。
-常见的是工厂模式和单例模式
+常见的设计模式有工厂模式和单例模式
 
 ## 4.2 请手写一个单例
-```
-    #python2
-    class A(object):
-        __instance = None
-        def __new__(cls,*args,**kwargs):
-            if cls.__instance is None:
-                cls.__instance = objecet.__new__(cls)
-                return cls.__instance
-            else:
-                return cls.__instance
+```python
+class A(object):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = objecet.__new__(cls)
+
+        return cls._instance
 ```
 ## 4.3 单例模式的应用场景有那些？
 单例模式应用的场景一般发现在以下条件下：
@@ -570,38 +668,55 @@ New 是真正创建实例对象的方法，所以重写基类的new 方法，以
 ## 4.5 对装饰器的理解，并写出一个计时器记录方法执行性能的装饰器？
 装饰器本质上是一个python函数，它可以让其他函数在不需要做任何代码变动的前提下增加额外功能，装饰器的返回值也是一个函数对象。
 
-```
-    import time
-    def timeit(func):
-        def wrapper():
-            start = time.clock()
-            func()
-            end = time.clock()
-            print('used:',end-start)
-            return wrapper
-    @timeit
-    def foo():
-        print('in foo()'foo())
+```python
+import time
+def timeit(func):
+    def wrapper():
+        start = time.process_time()
+        func()
+        end = time.process_time()
+        print('used:', end - start)
+        return wrapper
+
+@timeit
+def foo():
+    print('in foo()')
+
+foo()
 ```
 ## 4.6 解释以下什么是闭包？
-在函数内部再定义一个函数，并且这个函数用到了外边函数的变量，那么将这个函数以及用到的一些变量称之为闭包。
+在函数内部再定义一个函数，并且这个函数用到了外边函数的变量，那么将这个函数以及用到的一些变量称之为闭包。  
+闭包的特点：内部函数中的代码可以引用到外部变量，但外部函数则无法引用到内部的变量。
 
 ## 4.7 函数装饰器有什么作用？
-装饰器本质上是一个python函数，它可以在让其他函数在不需要做任何代码的变动的前提下增加额外的功能。装饰器的返回值也是一个函数的对象，它经常用于有切面需求的场景。比如：插入日志，性能测试，事务处理，缓存。权限的校验等场景，有了装饰器就可以抽离出大量的与函数功能本身无关的雷同代码并发并继续使用。
+装饰器本质上是一个函数，它可以在让其他函数在不需要做任何代码的变动的前提下增加额外的功能。装饰器的返回值也是一个函数的对象，它经常用于有切面需求的场景。比如：插入日志，性能测试，事务处理，缓存。权限的校验等场景，有了装饰器就可以抽离出大量的与函数功能本身无关的雷同代码并发并继续使用。
+
 ##  4.8 生成器，迭代器的区别？
 迭代器是一个更抽象的概念，任何对象，如果它的类有next方法和iter方法返回自己本身，对于string,list,dict,tuple等这类容器对象，使用for循环遍历是很方便的，在后台for语句对容器对象调用iter()函数，iter()是python的内置函数，iter()会返回一个定义了next()方法的迭代器对象，它在容器中逐个访问容器内元素，next()也是python的内置函数，在没有后续元素时，next()会抛出一个StopIteration异常。
 生成器（Generator）是创建迭代器的简单而强大的工具。它们写起来就像是正规的函数，只是在需要返回数据的时候使用yield语句。每次next()被调用时，生成器会返回它脱离的位置（它记忆语句最后一次执行的位置和所有的数据值）
 区别： 生成器能做到迭代器能做的所有事，而且因为自动创建iter()和next()方法，生成器显得特别简洁，而且生成器也是高效的，使用生成器表达式取代列表解析可以同时节省内存。除了创建和保存程序状态的自动方法，当发生器终结时，还会自动抛出StopIteration异常。
+
 ## 4.9 X是什么类型?
-    X= (fo ri in ramg(10))
-    X是 generator类型
-## 4.10 请用一行代码 实现将1-N 的整数列表以3为单位分组
+```python
+X = (i for i in range(10))
 ```
-    print ([[x for x in range(1,100)] [i:i+3] for i in range(0,len(list_a),3)])
+X 是 `generator` 类型
+
+## 4.10 请用一行代码 实现将 1-N 的整数列表以3为单位分组
+```python
+[list_a[i:i+3] for i in range(0, len(list_a), 3)]
 ```
-## 4.11 Python中yield的用法》
-yield就是保存当前程序执行状态。你用for循环的时候，每次取一个元素的时候就会计算一次。用yield的函数叫generator,和iterator一样，它的好处是不用一次计算所有元素，而是用一次算一次，可以节省很多空间，generator每次计算需要上一次计算结果，所以用yield,否则一return，上次计算结果就没了
-## 7系统编程
+```python
+N = 8
+[[x for x in range(i * 3 + 1, i * 3 + 4) if x <= N] for i in range(N // 3 + 1)]
+[list(x[1]) for x in itertools.groupby(range(1, 9), lambda x: (x - 1) // 3)] 
+```
+## 4.11 Python中yield的用法
+在函数体重定义 `yield` 可以让函数返回一个生成器。  
+在使用 `next` 等方法对这个生成器进行迭代时，函数内的代码会被执行，但会在 `yield` 语句处停下来，将 `yield` 的对象返回。进行下一轮迭代时，代码将从 `yield` 的地方继续执行。  
+生成器可以用来进行惰性迭代。
+
+## 7 系统编程
 ## 7.1 进程总结
 进程：程序运行在操作系统上的一个实例，就称之为进程。进程需要相应的系统资源：内存、时间片、pid。
 创建进程：
