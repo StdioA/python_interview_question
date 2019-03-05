@@ -491,30 +491,25 @@ class Foo(object, metaclass=Singleton):
 foo1 = Foo()
 foo2 = Foo()
 assert foo1 is foo2
-
 ```
-## 4.4 反转一个整数，例如-123 --> -321 
+
+第四种方法：直接使用 Python 内置的模块。模块不会重新导入，所以模块内定义的变量均为单例。
+## 4.4 反转一个整数，例如 -123 -> -321 
 ```python
 class Solution(object):
     def reverse(self,x):
-        if -10 < x < 10:
-            return x
         str_x = str(x)
-        if str_x[0] != "-":
-            str_x = str_x[::-1]
-            x = int(str_x)
+        if str_x[0].isdigit():
+            return int(str_x[::-1])
         else:
-            str_x = str_x[1:][::-1]
-            x = int(str_x)
-            x = -x
-        return x if -2147483648< x <2147483647 else 0
+            return int(str_x[0] + str_x[-1:0:-1])
 
 if __name__ == '__main__':
     s = Solution()
     reverse_int = s.reverse(-120)
     print(reverse_int)
 ```
-## 4.5 设计实现遍历目录与子目录，抓取.pyc文件
+## 4.5 设计实现遍历目录与子目录，抓取 .pyc 文件
 第一种方法：
 ```python
 import os
@@ -554,7 +549,7 @@ if __name__=='__main__':
     path = input('输入目录')
     scan_path(path)
 ```
-## 4.6 一行代码实现1-100之和
+## 4.6 一行代码实现 1-100 之和
 ```python
 sum(range(101))
 ```
@@ -603,6 +598,9 @@ atoi("123")
 * `range(start, stop[, step])`
 * `itertools.count(start=0, step=1)`
 
+## 4.16 Python 代码实现删除一个 list 里面的重复元素
+`lit(set(l))`
+
 ## 4.17 统计一个文本中单词频次最高的10个单词？
 ```python
 def most_common(text):
@@ -642,6 +640,62 @@ def merge(l1, l2):
     return result
 ```
 
+
+## 4.23 给定一个任意长度数组，实现一个函数
+给定一个任意长度数组，实现一个函数，让所有奇数都在偶数前面，而且奇数升序排列，偶数降序排列，如字符串 `'1982376455'`，变成 `'1355798642'`
+
+```python
+def sort_array(list_):
+    numbers = [int(n) for n in list_]
+    numbers.sort(reverse=True)
+    result = []
+    for number in numbers:
+        if number % 2 == 0:
+            result.append(str(number))
+        else:
+            result.insert(0, str(number))
+    return "".join(result)
+```
+
+
+## 4.24 阅读一下代码他们的输出结果是什么？
+```python
+def multi():
+    return [lambda x: i * x for i in range(4)]
+
+print([m(3) for m in multi()])
+```
+
+答案：`[9, 9, 9, 9]`。  
+这是一个经典的 lambda 表达式题（坑）。问题在于虽然生成了四个函数，但四个函数内的 `i` 变量是同一个引用。在循环结束后，i 的值为 3，所以这四个函数都是 `lambda x: 3 * x`.  
+如果希望输出 `[0, 3, 6, 9]`，则需要生成 lambda 函数时对 i 的值进行传递。如下：
+
+```python
+def multi():
+    return [lambda x, i=i: i * x for i in range(4)]
+
+print([m(3) for m in multi()])          # [0, 3, 6, 9]
+```
+
+## 4.25 统计一段字符串中字符出现的次数
+简单办法：`collections.Counter`
+
+不需要引用库的答案：
+```python
+def count_chars(s):
+    counter = {}
+    for c in s:
+        counter.setdefault(c, 0)
+        counter[c] += 1
+    return counter
+
+print(count_chars('12332132'))
+```
+
+
+## 4.26 super 函数的具体用法和场景
+`super` 函数的主要应用是获取对象在某基类上的绑定函数。  
+典型应用场景是调用父类的构造函数：`super().__init__(*args, **kwargs)`
 
 # Python高级
 ## 4 设计模式
